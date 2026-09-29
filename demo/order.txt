@@ -1,0 +1,6 @@
+Mahalaxmi Dudh Kendra
+Customer: Vedant
+Order Type: Dairy Products
+Product: Fresh Cow Milk
+Quantity: 2 Litres
+Delivery Location: Panvel
