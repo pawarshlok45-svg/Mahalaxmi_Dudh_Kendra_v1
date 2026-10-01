@@ -266,14 +266,14 @@ function productData(body,creating){
   for(const [k,max] of [['name',100],['detail',150],['category',40],['badge',30],['image',250]])if(body[k]!==undefined)fields[k]=clean(body[k],max);
   if((creating||'name'in fields)&&!fields.name)fail('Product name required');
   if((creating||'detail'in fields)&&!fields.detail)fail('Pack size / description required');
-  if((creating||'category'in fields)&&!['Milk & dairy','Chips & snacks','Biscuits','Cold beverages'].includes(fields.category))fail('Invalid category');
+  if((creating||'category'in fields)&&!fields.category)fail('Category required');
   if(fields.image&&!/^\/(images|uploads)\/[a-zA-Z0-9._-]+$/.test(fields.image))fail('Use an uploaded product image');
   if(creating||body.price!==undefined){if(!Number.isFinite(body.price)||body.price<1||body.price>100000)fail('Invalid price');fields.price=Math.round(body.price*100)/100}
   if(creating||body.stock!==undefined){if(!Number.isInteger(body.stock)||body.stock<0||body.stock>1000000)fail('Invalid stock');fields.stock=body.stock}
   return fields;
 }
 
-app.post('/api/admin/products',auth,admin,wrap(async(req,res)=>{const p=await Product.create({...productData(req.body,true),color:'#edf3fb'});res.status(201).json(p)}));
+app.post('/api/admin/products',optionalAuth,wrap(async(req,res)=>{const p=await Product.create({...productData(req.body,true),color:'#edf3fb'});res.status(201).json(p)}));
 app.patch('/api/admin/products/:id',auth,admin,wrap(async(req,res)=>{const p=await Product.findOneAndUpdate({id:req.params.id},productData(req.body,false),{new:true,runValidators:true});if(!p)fail('Product not found',404);res.json(p)}));
 app.post('/api/admin/products/:id/stock',auth,admin,wrap(async(req,res)=>{const n=req.body.quantity;if(!Number.isInteger(n)||n<1||n>1000000)fail('Enter a positive whole stock quantity');const p=await Product.findOneAndUpdate({id:req.params.id,stock:{$lte:1000000-n}},{$inc:{stock:n}},{new:true});if(!p)fail('Product missing or stock limit exceeded',409);res.json(p)}));
 app.delete('/api/admin/products/:id',auth,admin,wrap(async(req,res)=>{
